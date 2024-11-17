@@ -37,13 +37,12 @@ class Maze:
         x2 = x1 + self._cell_size_x
         y2 = y1 + self._cell_size_y
         self._cells[i][j].draw(x1, y1, x2, y2)
-        self._animate()
 
-    def _animate(self):
+    def _animate(self, animation_time):
         if self._win is None:
             return
         self._win.redraw()
-        sleep(0.02)
+        sleep(animation_time)
 
     def _break_entrance_and_exit(self):
         self._cells[0][0].has_top_wall = False
@@ -94,7 +93,7 @@ class Maze:
         return self._solve_r(0, 0)
     
     def _solve_r(self, i, j):
-        self._animate()
+        self._animate(0.01)
         self._cells[i][j].visited = True
         if self._cells[i][j] == self._cells[-1][-1]:
             return True

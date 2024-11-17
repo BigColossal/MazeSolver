@@ -1,22 +1,16 @@
-from maze import Maze
+from maze_sizes import large_maze, medium_maze, small_maze
 from graphics import Window
 from time import sleep
 
+SCREEN_X = 1300
+SCREEN_Y = 600
+WINDOW = Window(SCREEN_X, SCREEN_Y)
+
 def main():
-    num_rows = 12
-    num_cols = 16
-    margin = 50
-    screen_x = 800
-    screen_y = 600
-    cell_size_x = (screen_x - 2 * margin) / num_cols
-    cell_size_y = (screen_y - 2 * margin) / num_rows
-    win = Window(screen_x, screen_y)
-
-    maze = Maze(margin, margin, num_rows, num_cols, cell_size_x, cell_size_y, win)
+    large_maze()
 
 
-
-    win.wait_for_close()
+    WINDOW.wait_for_close()
 
 
 main()
