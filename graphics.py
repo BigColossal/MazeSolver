@@ -1,6 +1,5 @@
 from tkinter import Tk, BOTH, Canvas, Button
 from time import sleep
-from buttonCreation import move_to_selection_menu
 
 class Window:
     def __init__(self, width, height):
@@ -12,9 +11,49 @@ class Window:
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self.main_menu_creation()
 
+
+
+    # Menu creation and interactivity methods
     def main_menu_creation(self):
-        StartButton = GameButton((650, 300), move_to_selection_menu, "Main Menu", "Start Button")
-        StartButton.button_draw(self.__canvas, "Start", 20)
+        StartButton = GameButton((650, 300), self.move_to_selection_menu,
+                                  "Main Menu", "Start Button", self.__canvas)
+        StartButton.button_draw("Start", 20)
+
+    def move_to_selection_menu(self):
+        self.__canvas.delete("Main Menu")
+        self.selection_menu_creation()
+
+    def selection_menu_creation(self):
+        smallMazeButton = GameButton((650, 150), self._create_small_maze,
+                                    "Selection Menu", "Small Maze Button", self.__canvas)
+        smallMazeButton.button_draw("Small Maze", 20)
+        MediumMazeButton = GameButton((650, 300), self._create_medium_maze,
+                                    "Selection Menu", "Medium Maze Button", self.__canvas)
+        MediumMazeButton.button_draw("Medium Maze", 20)
+        LargeMazeButton = GameButton((650, 450), self._create_large_maze,
+                                    "Selection Menu", "Large Maze Button", self.__canvas)
+        LargeMazeButton.button_draw("Large Maze", 20)
+
+    
+
+    # creation of mazes
+    def _create_small_maze(self):
+        from maze_sizes import small_maze
+        self.__canvas.delete("Selection Menu")
+        small_maze(self)
+
+    def _create_medium_maze(self):
+        from maze_sizes import medium_maze
+        self.__canvas.delete("Selection Menu")
+        medium_maze(self)
+
+    def _create_large_maze(self):
+        from maze_sizes import large_maze
+        self.__canvas.delete("Selection Menu")
+        large_maze(self)
+
+
+
 
     def draw_line(self, line, fill_color="black"):
         line.draw(self.__canvas, fill_color)
@@ -112,21 +151,22 @@ class Cell:
         self._window.draw_line(line, fill_color)
 
 class GameButton:
-    def __init__(self, center_of_button, callback, general_tag_input, tag_input):
+    def __init__(self, center_of_button, callback, general_tag_input, tag_input, canvas):
         self._center = center_of_button
         self.callback = callback
         self._button_id = None
         self._general_tag = general_tag_input
         self._tag = tag_input
+        self._canvas = canvas
 
-    def button_draw(self, canvas, textInput, fontSize):
-        self._button_id = canvas.create_rectangle(self._center[0] - 65, self._center[1] - 25,
+    def button_draw(self, textInput, fontSize):
+        self._button_id = self._canvas.create_rectangle(self._center[0] - 65, self._center[1] - 25,
                                 self._center[0] + 65, self._center[1] + 25,
                                 fill="white", outline="white", tags=(self._general_tag, self._tag))
         
-        canvas.create_text(self._center[0], self._center[1], text=textInput, fill="black",
+        self._canvas.create_text(self._center[0], self._center[1], text=textInput, fill="black",
                             font=("Arial", fontSize), tags=(self._general_tag, self._tag))
-        canvas.tag_bind(self._tag, "<Button-1>", self.on_click)
+        self._canvas.tag_bind(self._tag, "<Button-1>", self.on_click)
 
     def on_click(self, event):
         self.callback()

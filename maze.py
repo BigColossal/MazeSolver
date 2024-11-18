@@ -29,7 +29,7 @@ class Maze:
             for j in range(self._num_rows):
                 self._draw_cell(i, j)
     
-    def _draw_cell(self, i, j):
+    def _draw_cell(self, i, j, breaking_walls=False):
         if self._win is None:
             return
         x1 = self._x1 + i * self._cell_size_x
@@ -37,6 +37,8 @@ class Maze:
         x2 = x1 + self._cell_size_x
         y2 = y1 + self._cell_size_y
         self._cells[i][j].draw(x1, y1, x2, y2)
+        if breaking_walls:
+            self._animate(0.01)
 
     def _animate(self, animation_time):
         if self._win is None:
@@ -64,7 +66,7 @@ class Maze:
                 to_visit.append((i, j + 1))
 
             if len(to_visit) == 0:
-                self._draw_cell(i, j)
+                self._draw_cell(i, j, True)
                 return
             direction_index = random.randrange(len(to_visit))
             direction = to_visit[direction_index]
