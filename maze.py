@@ -14,12 +14,14 @@ class Maze:
         self._win = win
         if seed:
             random.seed(seed)
+        
+        self._user_position = None
 
         self._create_cells()
         self._break_entrance_and_exit()
         self._break_walls_r(0, 0)
         self._reset_cells_visited()
-        self.solve()
+        self.user_solve(self._win.get_canvas())
     
     def _create_cells(self):
         for column in range(self._num_cols):
@@ -90,6 +92,34 @@ class Maze:
         for i in range(len(self._cells)):
             for j in range(len(self._cells[i])):
                 self._cells[i][j].visited = False
+    
+    def user_solve(self, canvas):
+        self._user_position = [0, 0]
+        canvas.focus_set()
+        canvas.bind("<Up>", self.handle_key_press)
+        canvas.bind("<Down>", self.handle_key_press)
+        canvas.bind("<Right>", self.handle_key_press)
+        canvas.bind("<Left>", self.handle_key_press)
+        canvas.bind("<a>", self.handle_key_press)
+        canvas.bind("<s>", self.handle_key_press)
+        canvas.bind("<w>", self.handle_key_press)
+        canvas.bind("<d>", self.handle_key_press)
+
+    def handle_key_press(self, event):
+        print(f"Key pressed: {event.keysym}, Current position: {self._user_position}")
+        if event.keysym == "Up" or event.keysym == "w":
+            if self._user_position[1] > 0 and not self._cells[self._user_position[0]][self._user_position[1]].has_top_wall:
+                self._user_position[1] -= 1
+                self._cells[self._user_position[0]][self._user_position[1] + 1].draw_move(self._cells[self._user_position[0]][self._user_position[1]])
+
+        elif event.keysym == "Down" or event.keysym == "s":
+            if self._user_position[1] < self._num_rows and not self._cells[self._user_position[0]][self._user_position[1]].has_bottom_wall:
+                self._user_position[1] += 1
+                self._cells[self._user_position[0]][self._user_position[1] - 1].draw_move(self._cells[self._user_position[0]][self._user_position[1]])
+        elif event.keysym == "Left" or event.keysym == "a":
+            pass
+        elif event.keysym == "Right" or event.keysym == "d":
+            pass
 
     def solve(self):
         return self._solve_r(0, 0)

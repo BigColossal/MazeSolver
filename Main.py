@@ -1,4 +1,3 @@
-from time import sleep
 from graphics import Window
 from config import SCREEN_X, SCREEN_Y, BACKGROUND_COLOR
 

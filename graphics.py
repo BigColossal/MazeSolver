@@ -13,7 +13,8 @@ class Window:
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
         self.main_menu_creation()
 
-
+    def get_canvas(self):
+        return self.__canvas
 
     # Menu creation and interactivity methods
     def main_menu_creation(self):
