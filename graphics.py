@@ -1,5 +1,6 @@
-from tkinter import Tk, BOTH, Canvas
+from tkinter import Tk, BOTH, Canvas, Button
 from time import sleep
+from buttonCreation import move_to_selection_menu
 
 class Window:
     def __init__(self, width, height):
@@ -9,6 +10,11 @@ class Window:
         self.__canvas.pack(fill=BOTH, expand=1)
         self.__running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
+        self.main_menu_creation()
+
+    def main_menu_creation(self):
+        StartButton = GameButton((650, 300), move_to_selection_menu, "Main Menu", "Start Button")
+        StartButton.button_draw(self.__canvas, "Start", 20)
 
     def draw_line(self, line, fill_color="black"):
         line.draw(self.__canvas, fill_color)
@@ -104,3 +110,24 @@ class Cell:
 
         line = Line(Point(x_center, y_center), Point(x_center2, y_center2))
         self._window.draw_line(line, fill_color)
+
+class GameButton:
+    def __init__(self, center_of_button, callback, general_tag_input, tag_input):
+        self._center = center_of_button
+        self.callback = callback
+        self._button_id = None
+        self._general_tag = general_tag_input
+        self._tag = tag_input
+
+    def button_draw(self, canvas, textInput, fontSize):
+        self._button_id = canvas.create_rectangle(self._center[0] - 65, self._center[1] - 25,
+                                self._center[0] + 65, self._center[1] + 25,
+                                fill="white", outline="white", tags=(self._general_tag, self._tag))
+        
+        canvas.create_text(self._center[0], self._center[1], text=textInput, fill="black",
+                            font=("Arial", fontSize), tags=(self._general_tag, self._tag))
+        canvas.tag_bind(self._tag, "<Button-1>", self.on_click)
+
+    def on_click(self, event):
+        self.callback()
+    
