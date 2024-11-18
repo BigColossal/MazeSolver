@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas, Button
 from time import sleep
+import webbrowser
 
 class Window:
     def __init__(self, width, height):
@@ -15,25 +16,45 @@ class Window:
 
     # Menu creation and interactivity methods
     def main_menu_creation(self):
-        StartButton = GameButton((650, 300), self.move_to_selection_menu,
+        mainMenuTitleText = UIText((650, 100), "Main Menu", self.__canvas)
+        referenceText = UIText((200, 540), "Main Menu", self.__canvas)
+        referenceButton = GameButton((200, 565), self.bootdev_reference, 
+                                   "Main Menu", "Reference Button", self.__canvas)
+        startButton = GameButton((650, 300), self.move_to_selection_menu,
                                   "Main Menu", "Start Button", self.__canvas)
-        StartButton.button_draw("Start", 20)
+        
+        mainMenuTitleText.text_draw("Maze Solver", 50)
+        referenceText.text_draw("Special thanks to boot.dev for guidance in this project", 16)
+        referenceButton.button_draw("Link to boot.dev", 16, "underline", "blue")
+        startButton.button_draw("Start", 20)
 
+
+    def selection_menu_creation(self):
+        SelectionMenuTitleText = UIText((650, 100), "Selection Menu", self.__canvas)
+        SelectionMenuTitleText.text_draw("Selection", 50)
+
+        smallMazeButton = GameButton((650, 200), self._create_small_maze,
+                                    "Selection Menu", "Small Maze Button", self.__canvas)
+        smallMazeButton.button_draw("Small Maze", 20)
+
+        MediumMazeButton = GameButton((650, 350), self._create_medium_maze,
+                                    "Selection Menu", "Medium Maze Button", self.__canvas)
+        MediumMazeButton.button_draw("Medium Maze", 20)
+
+        LargeMazeButton = GameButton((650, 500), self._create_large_maze,
+                                    "Selection Menu", "Large Maze Button", self.__canvas)
+        LargeMazeButton.button_draw("Large Maze", 20)
+
+
+
+    # button actions
     def move_to_selection_menu(self):
         self.__canvas.delete("Main Menu")
         self.selection_menu_creation()
 
-    def selection_menu_creation(self):
-        smallMazeButton = GameButton((650, 150), self._create_small_maze,
-                                    "Selection Menu", "Small Maze Button", self.__canvas)
-        smallMazeButton.button_draw("Small Maze", 20)
-        MediumMazeButton = GameButton((650, 300), self._create_medium_maze,
-                                    "Selection Menu", "Medium Maze Button", self.__canvas)
-        MediumMazeButton.button_draw("Medium Maze", 20)
-        LargeMazeButton = GameButton((650, 450), self._create_large_maze,
-                                    "Selection Menu", "Large Maze Button", self.__canvas)
-        LargeMazeButton.button_draw("Large Maze", 20)
-
+    def bootdev_reference(self):
+        url = "https://www.boot.dev"
+        webbrowser.open(url)
     
 
     # creation of mazes
@@ -159,15 +180,25 @@ class GameButton:
         self._tag = tag_input
         self._canvas = canvas
 
-    def button_draw(self, textInput, fontSize):
-        self._button_id = self._canvas.create_rectangle(self._center[0] - 65, self._center[1] - 25,
-                                self._center[0] + 65, self._center[1] + 25,
+    def button_draw(self, textInput, fontSize, uniqueTextFont="", textColor="black"):
+        self._button_id = self._canvas.create_rectangle(self._center[0] - 65, self._center[1] - 15,
+                                self._center[0] + 65, self._center[1] + 15,
                                 fill="white", outline="white", tags=(self._general_tag, self._tag))
         
-        self._canvas.create_text(self._center[0], self._center[1], text=textInput, fill="black",
-                            font=("Arial", fontSize), tags=(self._general_tag, self._tag))
+        self._canvas.create_text(self._center[0], self._center[1], text=textInput, fill=textColor,
+                            font=("Arial", fontSize, uniqueTextFont), tags=(self._general_tag, self._tag))
         self._canvas.tag_bind(self._tag, "<Button-1>", self.on_click)
 
     def on_click(self, event):
         self.callback()
+
+class UIText:
+    def __init__(self, center_of_text, general_tag_input, canvas):
+        self._center = center_of_text
+        self._tag = general_tag_input
+        self._canvas = canvas
+
+    def text_draw(self, textInput, fontSize):
+        self._canvas.create_text(self._center[0], self._center[1], text=textInput, fill="black",
+                                 font=("Arial", fontSize), tags=(self._tag,))
     
