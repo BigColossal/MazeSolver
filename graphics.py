@@ -11,10 +11,14 @@ class Window:
         self.__canvas.pack(fill=BOTH, expand=1)
         self.__running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
+        self.__solveMethod = None
         self.main_menu_creation()
 
     def get_canvas(self):
         return self.__canvas
+    
+    def get_solve_method(self):
+        return self.__solveMethod
 
     # Menu creation and interactivity methods
     def main_menu_creation(self):
@@ -25,7 +29,7 @@ class Window:
         referenceText = UIText((210, 540), "Main Menu", self.__canvas)
         referenceButton = GameButton((210, 565), self.bootdev_reference, 
                                    "Main Menu", "Reference Button", self.__canvas)
-        startButton = GameButton((650, 300), self.move_to_selection_menu,
+        startButton = GameButton((650, 300), self.move_to_solve_method_menu,
                                   "Main Menu", "Start Button", self.__canvas)
         
         backgroundLayer1.rect_draw()
@@ -33,13 +37,24 @@ class Window:
         backgroundLayer3.rect_draw()
         mainMenuTitleText.text_draw("Maze Solver", 50)
         referenceText.text_draw("Special thanks to boot.dev for guidance in this project", 16)
-        referenceButton.button_draw("Link to boot.dev", 16, "underline", "lightblue")
+        referenceButton.button_draw("Link to boot.dev", 16, uniqueTextFont="underline", textColor="lightblue")
         startButton.button_draw("Start", 20, textColor="#53A2BE")
 
+    def solve_method_menu_creation(self):
+        solveMethodTitleText = UIText((650, 100), "Solve Selection Menu", self.__canvas)
+        solveMethodTitleText.text_draw("Solve Selection", 50)
+
+        humanSolveButton = GameButton((650, 250), self._set_human_solve_method,
+                                      "Solve Selection Menu", "Human Selection Button", self.__canvas)
+        humanSolveButton.button_draw("Solve it yourself", 25, 100, textColor="#53A2BE")
+
+        botSolveButton = GameButton((650, 400), self._set_bot_solve_method,
+                                      "Solve Selection Menu", "Bot Selection Button", self.__canvas)
+        botSolveButton.button_draw("Watch the bot solve", 25, 110, textColor="#53A2BE")
 
     def selection_menu_creation(self):
         SelectionMenuTitleText = UIText((650, 100), "Selection Menu", self.__canvas)
-        SelectionMenuTitleText.text_draw("Selection", 50)
+        SelectionMenuTitleText.text_draw("Maze Selection", 50)
 
         smallMazeButton = GameButton((650, 200), self._create_small_maze,
                                     "Selection Menu", "Small Maze Button", self.__canvas)
@@ -53,17 +68,24 @@ class Window:
                                     "Selection Menu", "Large Maze Button", self.__canvas)
         LargeMazeButton.button_draw("Large Maze", 20, textColor="#53A2BE")
 
-
-
     # button actions
-    def move_to_selection_menu(self):
+    def move_to_solve_method_menu(self):
         self.__canvas.delete("Main Menu")
-        self.selection_menu_creation()
+        self.solve_method_menu_creation()
 
     def bootdev_reference(self):
         url = "https://www.boot.dev"
         webbrowser.open(url)
+
+    def _set_human_solve_method(self):
+        self.__canvas.delete("Solve Selection Menu")
+        self.__solveMethod = "user"
+        self.selection_menu_creation()
     
+    def _set_bot_solve_method(self):
+        self.__canvas.delete("Solve Selection Menu")
+        self.__solveMethod = "bot"
+        self.selection_menu_creation()
 
     # creation of mazes
     def _create_small_maze(self):
@@ -81,11 +103,16 @@ class Window:
         self.__canvas.delete("Selection Menu")
         large_maze(self)
 
+    def _end_screen(self):
+        endScreen = BackgroundRectangle((650, 300), 1275, 575, self.__canvas, "black")
+        endScreen.rect_draw()
+        endScreenText = UIText((650, 300), "End Screen", self.__canvas)
+        endScreenText.text_draw("Congratulations, you won the game", 50)
 
 
 
     def draw_line(self, line, fill_color="#53A2BE"):
-        line.draw(self.__canvas, fill_color)
+        return line.draw(self.__canvas, fill_color)
 
     def redraw(self):
         self.__root.update_idletasks()
@@ -113,7 +140,7 @@ class Line:
         self.y2 = point2.y
 
     def draw(self, canvas, fill_color="black"):
-        canvas.create_line(self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=2)
+        return canvas.create_line(self.x1, self.y1, self.x2, self.y2, fill=fill_color, width=2)
 
 class Cell:
     def __init__(self, window=None):
@@ -126,7 +153,11 @@ class Cell:
         self._y1 = None
         self._y2 = None
         self._window = window
+        self._canvas = self._window.get_canvas()
         self.visited = False
+        self.visitedVertically = False
+
+        self._user_line_id = None
 
     def draw(self, x1, y1, x2, y2):
         if self._window is None:
@@ -140,28 +171,28 @@ class Cell:
             self._window.draw_line(line)
         else:
             line = Line(Point(x1, y1), Point(x1, y2))
-            self._window.draw_line(line, "#0A2239")
+            self._window.draw_line(line, "#0A1119")
 
         if self.has_top_wall:
             line = Line(Point(x1, y1), Point(x2, y1))
             self._window.draw_line(line)
         else:
             line = Line(Point(x1, y1), Point(x2, y1))
-            self._window.draw_line(line, "#0A2239")
+            self._window.draw_line(line, "#0A1119")
 
         if self.has_right_wall:
             line = Line(Point(x2, y1), Point(x2, y2))
             self._window.draw_line(line)
         else:
             line = Line(Point(x2, y1), Point(x2, y2))
-            self._window.draw_line(line, "#0A2239")
+            self._window.draw_line(line, "#0A1119")
 
         if self.has_bottom_wall:
             line = Line(Point(x1, y2), Point(x2, y2))
             self._window.draw_line(line)
         else:
             line = Line(Point(x1, y2), Point(x2, y2))
-            self._window.draw_line(line, "#0A2239")
+            self._window.draw_line(line, "#0A1119")
 
     def draw_move(self, to_cell, undo=False):
         half_length = abs(self._x2 - self._x1) // 2
@@ -177,7 +208,11 @@ class Cell:
             fill_color = "gray"
 
         line = Line(Point(x_center, y_center), Point(x_center2, y_center2))
-        self._window.draw_line(line, fill_color)
+        self._user_line_id = self._window.draw_line(line, fill_color)
+
+    def delete_draw_move(self):
+        self._canvas.delete(self._user_line_id)
+        self._user_line_id = None
 
 class GameButton:
     def __init__(self, center_of_button, callback, general_tag_input, tag_input, canvas):
@@ -188,9 +223,9 @@ class GameButton:
         self._tag = tag_input
         self._canvas = canvas
 
-    def button_draw(self, textInput, fontSize, uniqueTextFont="", textColor="black"):
-        self._button_id = self._canvas.create_rectangle(self._center[0] - 65, self._center[1] - 15,
-                                self._center[0] + 65, self._center[1] + 15,
+    def button_draw(self, textInput, fontSize, width=65, uniqueTextFont="", textColor="black"):
+        self._button_id = self._canvas.create_rectangle(self._center[0] - width, self._center[1] - 15,
+                                self._center[0] + width, self._center[1] + 15,
                                 fill="#0A2742", outline="#0A2742", tags=(self._general_tag, self._tag))
         
         self._canvas.create_text(self._center[0], self._center[1], text=textInput, fill=textColor,

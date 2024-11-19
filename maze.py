@@ -12,16 +12,19 @@ class Maze:
         self._cell_size_y = cell_size_y
         self._cells = []
         self._win = win
+        self.solveMethod = self._win.get_solve_method()
         if seed:
             random.seed(seed)
-        
         self._user_position = None
 
         self._create_cells()
         self._break_entrance_and_exit()
         self._break_walls_r(0, 0)
         self._reset_cells_visited()
-        self.user_solve(self._win.get_canvas())
+        if self.solveMethod == "user":
+            self.user_solve(self._win.get_canvas())
+        elif self.solveMethod == "bot":
+            self.solve()
     
     def _create_cells(self):
         for column in range(self._num_cols):
@@ -106,20 +109,65 @@ class Maze:
         canvas.bind("<d>", self.handle_key_press)
 
     def handle_key_press(self, event):
-        print(f"Key pressed: {event.keysym}, Current position: {self._user_position}")
         if event.keysym == "Up" or event.keysym == "w":
             if self._user_position[1] > 0 and not self._cells[self._user_position[0]][self._user_position[1]].has_top_wall:
-                self._user_position[1] -= 1
-                self._cells[self._user_position[0]][self._user_position[1] + 1].draw_move(self._cells[self._user_position[0]][self._user_position[1]])
+                if not self._cells[self._user_position[0]][self._user_position[1] - 1].visited:
+                    self._cells[self._user_position[0]][self._user_position[1]].draw_move(self._cells[self._user_position[0]][self._user_position[1] - 1])
+                    self._cells[self._user_position[0]][self._user_position[1] - 1].visited = True
+                    self._user_position[1] -= 1
+                else:
+                    self._cells[self._user_position[0]][self._user_position[1] - 1].delete_draw_move()
+                    self._cells[self._user_position[0]][self._user_position[1]].visited = False
+                    self._user_position[1] -= 1
 
         elif event.keysym == "Down" or event.keysym == "s":
-            if self._user_position[1] < self._num_rows and not self._cells[self._user_position[0]][self._user_position[1]].has_bottom_wall:
-                self._user_position[1] += 1
-                self._cells[self._user_position[0]][self._user_position[1] - 1].draw_move(self._cells[self._user_position[0]][self._user_position[1]])
+            if self._user_position[1] < self._num_rows - 1 and not self._cells[self._user_position[0]][self._user_position[1]].has_bottom_wall:
+                if not self._cells[self._user_position[0]][self._user_position[1] + 1].visited:
+                    self._cells[self._user_position[0]][self._user_position[1]].draw_move(self._cells[self._user_position[0]][self._user_position[1] + 1])
+                    self._cells[self._user_position[0]][self._user_position[1] + 1].visited = True
+                    self._user_position[1] += 1
+                else:
+                    self._cells[self._user_position[0]][self._user_position[1] + 1].delete_draw_move()
+                    self._cells[self._user_position[0]][self._user_position[1]].visited = False
+                    self._user_position[1] += 1
+
         elif event.keysym == "Left" or event.keysym == "a":
-            pass
+            if self._user_position[0] > 0 and not self._cells[self._user_position[0]][self._user_position[1]].has_left_wall:
+                if not self._cells[self._user_position[0] - 1][self._user_position[1]].visited:
+                    self._cells[self._user_position[0]][self._user_position[1]].draw_move(self._cells[self._user_position[0] - 1][self._user_position[1]])
+                    self._cells[self._user_position[0] - 1][self._user_position[1]].visited = True
+                    self._user_position[0] -= 1
+                else:
+                    self._cells[self._user_position[0] - 1][self._user_position[1]].delete_draw_move()
+                    self._cells[self._user_position[0]][self._user_position[1]].visited = False
+                    self._user_position[0] -= 1
+
         elif event.keysym == "Right" or event.keysym == "d":
-            pass
+            if self._user_position[0] < self._num_cols - 1 and not self._cells[self._user_position[0]][self._user_position[1]].has_right_wall:
+                if not self._cells[self._user_position[0] + 1][self._user_position[1]].visited:
+                    self._cells[self._user_position[0]][self._user_position[1]].draw_move(self._cells[self._user_position[0] + 1][self._user_position[1]])
+                    self._cells[self._user_position[0] + 1][self._user_position[1]].visited = True
+                    self._user_position[0] += 1
+                else:
+                    self._cells[self._user_position[0] + 1][self._user_position[1]].delete_draw_move()
+                    self._cells[self._user_position[0]][self._user_position[1]].visited = False
+                    self._user_position[0] += 1
+        
+        if self._user_position == [self._num_cols - 1, self._num_rows - 1]:
+            print("you won!")
+            self.end_user_solve()
+            
+    def end_user_solve(self):
+        canvas = self._win.get_canvas()
+        canvas.unbind("<Up>")
+        canvas.unbind("<Down>")
+        canvas.unbind("<Righst>")
+        canvas.unbind("<Left>")
+        canvas.unbind("<a>")
+        canvas.unbind("<s>")
+        canvas.unbind("<w>")
+        canvas.unbind("<d>")
+        self._win._end_screen()
 
     def solve(self):
         return self._solve_r(0, 0)
@@ -150,7 +198,7 @@ class Maze:
             else:
                 self._cells[i][j].draw_move(self._cells[i][j - 1], True)
 
-        if j < self._num_rows and not self._cells[i][j].has_bottom_wall and not self._cells[i][j + 1].visited:
+        if j < self._num_rows - 1 and not self._cells[i][j].has_bottom_wall and not self._cells[i][j + 1].visited:
             self._cells[i][j].draw_move(self._cells[i][j + 1])
             if self._solve_r(i, j + 1):
                 return True
